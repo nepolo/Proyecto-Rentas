@@ -1,0 +1,19 @@
+spring:
+  application:
+    name: cartera-service
+  datasource:
+    url: jdbc:h2:mem:cartera_db
+    driver-class-name: org.h2.Driver
+    username: sa
+    password: 
+  h2:
+    console:
+      enabled: true
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    show-sql: true
+flyway:
+  enabled: true
+server:
+  port: 8085

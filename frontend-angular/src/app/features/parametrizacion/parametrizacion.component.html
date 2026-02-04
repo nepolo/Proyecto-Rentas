@@ -1,0 +1,97 @@
+<div class="parametrizacion-container">
+  <div class="header">
+    <h2 class="page-title">⚙️ Parametrización de Rentas</h2>
+    <button class="btn btn-primary" (click)="openForm()">
+      <span class="material-icons">add</span>
+      Nueva Renta
+    </button>
+  </div>
+
+  <div *ngIf="loading" class="spinner">Cargando...</div>
+
+  <div *ngIf="!loading && !showForm" class="table-container">
+    <table class="table">
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Nombre</th>
+          <th>Tipo</th>
+          <th>Periodicidad</th>
+          <th>Vigencia Inicio</th>
+          <th>Vigencia Fin</th>
+          <th>Acciones</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let renta of rentas">
+          <td>{{ renta.id }}</td>
+          <td>{{ renta.nombre }}</td>
+          <td>{{ renta.tipo }}</td>
+          <td>{{ renta.periodicidad }}</td>
+          <td>{{ renta.vigenciaInicio || 'N/A' }}</td>
+          <td>{{ renta.vigenciaFin || 'N/A' }}</td>
+          <td class="actions">
+            <button class="btn-icon" (click)="editRenta(renta)">
+              <span class="material-icons">edit</span>
+            </button>
+            <button class="btn-icon danger" (click)="deleteRenta(renta.id!)">
+              <span class="material-icons">delete</span>
+            </button>
+          </td>
+        </tr>
+        <tr *ngIf="rentas.length === 0">
+          <td colspan="7" class="empty-state">No hay rentas configuradas</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div *ngIf="showForm" class="form-container card">
+    <h3>{{ editMode ? 'Editar' : 'Nueva' }} Renta</h3>
+    
+    <div class="form-group">
+      <label class="form-label">Nombre *</label>
+      <input type="text" class="form-control" [(ngModel)]="currentRenta.nombre" placeholder="Ej: Impuesto Predial">
+    </div>
+
+    <div class="form-group">
+      <label class="form-label">Tipo</label>
+      <select class="form-control" [(ngModel)]="currentRenta.tipo">
+        <option value="ANUAL">Anual</option>
+        <option value="BIMESTRAL">Bimestral</option>
+        <option value="TRIMESTRAL">Trimestral</option>
+        <option value="MENSUAL">Mensual</option>
+      </select>
+    </div>
+
+    <div class="form-group">
+      <label class="form-label">Periodicidad</label>
+      <select class="form-control" [(ngModel)]="currentRenta.periodicidad">
+        <option value="ANUAL">Anual</option>
+        <option value="BIMESTRAL">Bimestral</option>
+        <option value="TRIMESTRAL">Trimestral</option>
+        <option value="MENSUAL">Mensual</option>
+      </select>
+    </div>
+
+    <div class="form-group">
+      <label class="form-label">Vigencia Inicio</label>
+      <input type="date" class="form-control" [(ngModel)]="currentRenta.vigenciaInicio">
+    </div>
+
+    <div class="form-group">
+      <label class="form-label">Vigencia Fin</label>
+      <input type="date" class="form-control" [(ngModel)]="currentRenta.vigenciaFin">
+    </div>
+
+    <div class="form-actions">
+      <button class="btn btn-primary" (click)="saveRenta()">
+        <span class="material-icons">save</span>
+        Guardar
+      </button>
+      <button class="btn" (click)="closeForm()">
+        Cancelar
+      </button>
+    </div>
+  </div>
+</div>

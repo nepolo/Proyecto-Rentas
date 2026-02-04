@@ -1,0 +1,19 @@
+{
+  "/api": {
+    "target": "http://localhost:8080",
+    "secure": false,
+    "logLevel": "debug",
+    "changeOrigin": true,
+    "pathRewrite": {
+      "^/api/parametrizacion": "http://localhost:8080/api",
+      "^/api/formulas": "http://localhost:8081/api",
+      "^/api/liquidaciones": "http://localhost:8082/api",
+      "^/api/facturas": "http://localhost:8083/api",
+      "^/api/pagos": "http://localhost:8084/api",
+      "^/api/cartera": "http://localhost:8085/api",
+      "^/api/contabilidad": "http://localhost:8086/api",
+      "^/api/notificaciones": "http://localhost:8087/api",
+      "^/api/usuarios": "http://localhost:8088/api"
+    }
+  }
+}

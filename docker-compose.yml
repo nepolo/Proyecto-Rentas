@@ -1,0 +1,182 @@
+version: '3.8'
+
+services:
+  # Microservicio Parametrización
+  parametrizacion-service:
+    build:
+      context: ./services/parametrizacion-service
+      dockerfile: Dockerfile
+    ports:
+      - "8080:8080"
+    environment:
+      - SPRING_PROFILES_ACTIVE=dev
+      - SPRING_DATASOURCE_URL=jdbc:h2:mem:param_db
+    networks:
+      - plataforma-tributaria
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/actuator/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Microservicio Motor de Fórmulas
+  motor-formulas-service:
+    build:
+      context: ./services/motor-formulas-service
+      dockerfile: Dockerfile
+    ports:
+      - "8081:8081"
+    environment:
+      - SPRING_PROFILES_ACTIVE=dev
+      - SPRING_DATASOURCE_URL=jdbc:h2:mem:formulas_db
+    networks:
+      - plataforma-tributaria
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8081/actuator/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Microservicio Liquidación
+  liquidacion-service:
+    build:
+      context: ./services/liquidacion-service
+      dockerfile: Dockerfile
+    ports:
+      - "8082:8082"
+    environment:
+      - SPRING_PROFILES_ACTIVE=dev
+      - SPRING_DATASOURCE_URL=jdbc:h2:mem:liquidacion_db
+    depends_on:
+      - parametrizacion-service
+      - motor-formulas-service
+    networks:
+      - plataforma-tributaria
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8082/actuator/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Microservicio Facturación
+  facturacion-service:
+    build:
+      context: ./services/facturacion-service
+      dockerfile: Dockerfile
+    ports:
+      - "8083:8083"
+    environment:
+      - SPRING_PROFILES_ACTIVE=dev
+      - SPRING_DATASOURCE_URL=jdbc:h2:mem:facturacion_db
+    depends_on:
+      - liquidacion-service
+    networks:
+      - plataforma-tributaria
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8083/actuator/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Microservicio Recaudo
+  recaudo-service:
+    build:
+      context: ./services/recaudo-service
+      dockerfile: Dockerfile
+    ports:
+      - "8084:8084"
+    environment:
+      - SPRING_PROFILES_ACTIVE=dev
+      - SPRING_DATASOURCE_URL=jdbc:h2:mem:recaudo_db
+    depends_on:
+      - facturacion-service
+    networks:
+      - plataforma-tributaria
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8084/actuator/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Microservicio Cartera
+  cartera-service:
+    build:
+      context: ./services/cartera-service
+      dockerfile: Dockerfile
+    ports:
+      - "8085:8085"
+    environment:
+      - SPRING_PROFILES_ACTIVE=dev
+      - SPRING_DATASOURCE_URL=jdbc:h2:mem:cartera_db
+    depends_on:
+      - recaudo-service
+    networks:
+      - plataforma-tributaria
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8085/actuator/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Microservicio Contabilidad
+  contabilidad-service:
+    build:
+      context: ./services/contabilidad-service
+      dockerfile: Dockerfile
+    ports:
+      - "8086:8086"
+    environment:
+      - SPRING_PROFILES_ACTIVE=dev
+      - SPRING_DATASOURCE_URL=jdbc:h2:mem:contabilidad_db
+    depends_on:
+      - recaudo-service
+    networks:
+      - plataforma-tributaria
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8086/actuator/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Microservicio Notificaciones
+  notificaciones-service:
+    build:
+      context: ./services/notificaciones-service
+      dockerfile: Dockerfile
+    ports:
+      - "8087:8087"
+    environment:
+      - SPRING_PROFILES_ACTIVE=dev
+      - SPRING_DATASOURCE_URL=jdbc:h2:mem:notificaciones_db
+    networks:
+      - plataforma-tributaria
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8087/actuator/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Microservicio Seguridad
+  seguridad-service:
+    build:
+      context: ./services/seguridad-service
+      dockerfile: Dockerfile
+    ports:
+      - "8088:8088"
+    environment:
+      - SPRING_PROFILES_ACTIVE=dev
+      - SPRING_DATASOURCE_URL=jdbc:h2:mem:seguridad_db
+    networks:
+      - plataforma-tributaria
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8088/actuator/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+networks:
+  plataforma-tributaria:
+    driver: bridge
+
+volumes:
+  h2-data:

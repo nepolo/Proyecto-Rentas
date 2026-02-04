@@ -1,0 +1,65 @@
+<div class="dashboard-container">
+  <h2 class="page-title">📊 Dashboard Tributario</h2>
+
+  <div *ngIf="loading" class="spinner">
+    <div class="loading-text">Cargando datos...</div>
+  </div>
+
+  <div *ngIf="!loading" class="stats-grid">
+    <div class="stat-card">
+      <div class="stat-icon">🏛</div>
+      <div class="stat-content">
+        <div class="stat-label">Rentas Configuradas</div>
+        <div class="stat-value">{{ stats.totalRentas }}</div>
+      </div>
+    </div>
+
+    <div class="stat-card">
+      <div class="stat-icon">📝</div>
+      <div class="stat-content">
+        <div class="stat-label">Liquidaciones Pendientes</div>
+        <div class="stat-value">{{ stats.liquidacionesPendientes }}</div>
+      </div>
+    </div>
+
+    <div class="stat-card">
+      <div class="stat-icon">📄</div>
+      <div class="stat-content">
+        <div class="stat-label">Facturas Pendientes</div>
+        <div class="stat-value">{{ stats.facturasPendientes }}</div>
+      </div>
+    </div>
+
+    <div class="stat-card">
+      <div class="stat-icon">💰</div>
+      <div class="stat-content">
+        <div class="stat-label">Pagos Hoy</div>
+        <div class="stat-value">{{ stats.pagosHoy }}</div>
+      </div>
+    </div>
+
+    <div class="stat-card highlight">
+      <div class="stat-icon">💵</div>
+      <div class="stat-content">
+        <div class="stat-label">Saldo Total Recaudado</div>
+        <div class="stat-value">{{ stats.saldoTotal | number:'1.2-2' }}</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="welcome-section">
+    <h3>Bienvenido a la Plataforma Tributaria</h3>
+    <p>Sistema completo de gestión tributaria con 9 microservicios integrados:</p>
+    <ul>
+      <li>✅ Parametrización de rentas y conceptos tributarios</li>
+      <li>✅ Motor de fórmulas dinámicas</li>
+      <li>✅ Liquidación de obligaciones tributarias</li>
+      <li>✅ Facturación electrónica</li>
+      <li>✅ Recaudo y gestión de pagos</li>
+      <li>✅ Cartera y estados de cuenta</li>
+      <li>✅ Contabilidad integrada</li>
+      <li>✅ Notificaciones multicanal</li>
+      <li>✅ Seguridad y gestión de usuarios</li>
+    </ul>
+  </div>
+</div>

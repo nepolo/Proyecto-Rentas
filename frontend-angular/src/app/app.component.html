@@ -1,0 +1,54 @@
+<div class="app-container">
+  <!-- Header -->
+  <header class="app-header">
+    <div class="header-content">
+      <button class="menu-toggle" (click)="toggleMenu()">
+        <span class="material-icons">menu</span>
+      </button>
+      <h1 class="app-title">🏛 Plataforma Tributaria</h1>
+      <div class="header-actions">
+        <span class="material-icons">notifications</span>
+        <span class="material-icons">account_circle</span>
+      </div>
+    </div>
+  </header>
+
+  <!-- Sidebar -->
+  <aside class="app-sidebar" [class.open]="menuOpen">
+    <nav class="sidebar-nav">
+      <a routerLink="/dashboard" routerLinkActive="active" class="nav-item">
+        <span class="material-icons">dashboard</span>
+        <span>Dashboard</span>
+      </a>
+      <a routerLink="/parametrizacion" routerLinkActive="active" class="nav-item">
+        <span class="material-icons">settings</span>
+        <span>Parametrización</span>
+      </a>
+      <a routerLink="/formulas" routerLinkActive="active" class="nav-item">
+        <span class="material-icons">calculate</span>
+        <span>Fórmulas</span>
+      </a>
+      <a routerLink="/liquidaciones" routerLinkActive="active" class="nav-item">
+        <span class="material-icons">receipt_long</span>
+        <span>Liquidaciones</span>
+      </a>
+      <a routerLink="/facturas" routerLinkActive="active" class="nav-item">
+        <span class="material-icons">description</span>
+        <span>Facturas</span>
+      </a>
+      <a routerLink="/pagos" routerLinkActive="active" class="nav-item">
+        <span class="material-icons">payment</span>
+        <span>Pagos</span>
+      </a>
+      <a routerLink="/cartera" routerLinkActive="active" class="nav-item">
+        <span class="material-icons">account_balance_wallet</span>
+        <span>Cartera</span>
+      </a>
+    </nav>
+  </aside>
+
+  <!-- Main Content -->
+  <main class="app-main">
+    <router-outlet></router-outlet>
+  </main>
+</div>
