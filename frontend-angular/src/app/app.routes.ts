@@ -11,8 +11,54 @@ export const routes: Routes = [
     loadComponent: () => import('./features/dashboard/dashboard.component').then(m => m.DashboardComponent)
   },
   {
-    path: 'parametrizacion',
-    loadComponent: () => import('./features/parametrizacion/parametrizacion.component').then(m => m.ParametrizacionComponent)
+    path: 'admin',
+    loadComponent: () => import('./features/admin/admin.component').then(m => m.AdminComponent),
+    children: [
+      {
+        path: 'usuarios',
+        loadComponent: () => import('./features/admin/usuarios/usuarios.component').then(m => m.UsuariosComponent)
+      },
+      {
+        path: 'roles',
+        loadComponent: () => import('./features/admin/roles-permisos/roles-permisos.component').then(m => m.RolesPermisosComponent)
+      },
+      {
+        path: 'entidades',
+        loadComponent: () => import('./features/admin/entidades/entidades.component').then(m => m.EntidadesComponent)
+      },
+      {
+        path: 'configuracion',
+        loadComponent: () => import('./features/admin/configuracion/configuracion.component').then(m => m.ConfiguracionComponent)
+      },
+      {
+        path: 'auditoria',
+        loadComponent: () => import('./features/admin/auditoria/auditoria.component').then(m => m.AuditoriaComponent)
+      }
+    ]
+  },
+  {
+    path: 'fuentes',
+    loadComponent: () => import('./features/fuentes/fuentes.component').then(m => m.FuentesComponent)
+  },
+  {
+    path: 'fuentes/:id',
+    loadComponent: () => import('./features/fuentes/fuente-detalle/fuente-detalle-v2.component').then(m => m.FuenteDetalleV2Component)
+  },
+  {
+    path: 'valores-base',
+    loadComponent: () => import('./features/valores-base/valores-base.component').then(m => m.ValoresBaseComponent)
+  },
+  {
+    path: 'parametrizacion-fuente',
+    loadComponent: () => import('./features/parametrizacion/parametrizacion-fuente.component').then(m => m.ParametrizacionFuenteComponent)
+  },
+  {
+    path: 'descuentos',
+    loadComponent: () => import('./features/descuentos/descuentos.component').then(m => m.DescuentosComponent)
+  },
+  {
+    path: 'exenciones',
+    loadComponent: () => import('./features/exenciones/exenciones.component').then(m => m.ExencionesComponent)
   },
   {
     path: 'formulas',
@@ -20,7 +66,11 @@ export const routes: Routes = [
   },
   {
     path: 'liquidaciones',
-    loadComponent: () => import('./features/liquidaciones/liquidaciones.component').then(m => m.LiquidacionesComponent)
+    loadComponent: () => import('./features/liquidaciones/motor-liquidacion.component').then(m => m.MotorLiquidacionComponent)
+  },
+  {
+    path: 'nueva-liquidacion',
+    loadComponent: () => import('./features/liquidaciones/nueva-liquidacion-clean.component').then(m => m.NuevaLiquidacionComponent)
   },
   {
     path: 'facturas',

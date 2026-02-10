@@ -1,5 +1,5 @@
 # Script para compilar todos los microservicios
-Write-Host "🏗️ Compilando Todos los Microservicios de la Plataforma Tributaria" -ForegroundColor Cyan
+Write-Host "Compilando Todos los Microservicios de la Plataforma Tributaria" -ForegroundColor Cyan
 Write-Host "=================================================================" -ForegroundColor Cyan
 Write-Host ""
 
@@ -22,7 +22,7 @@ $failed = @()
 foreach ($service in $services) {
     $servicePath = "services\$service"
     
-    Write-Host "📦 Compilando: $service" -ForegroundColor Yellow
+    Write-Host "Compilando: $service" -ForegroundColor Yellow
     Write-Host "   Ruta: $servicePath" -ForegroundColor Gray
     
     if (Test-Path $servicePath) {
@@ -32,22 +32,22 @@ foreach ($service in $services) {
             $output = mvn clean package -DskipTests 2>&1
             
             if ($LASTEXITCODE -eq 0) {
-                Write-Host "   ✅ $service compilado exitosamente" -ForegroundColor Green
+                Write-Host "   OK: $service compilado exitosamente" -ForegroundColor Green
                 $succeeded += $service
             } else {
-                Write-Host "   ❌ Error compilando $service" -ForegroundColor Red
+                Write-Host "   ERROR: Error compilando $service" -ForegroundColor Red
                 $failed += $service
                 $exitCode = 1
             }
         } catch {
-            Write-Host "   ❌ Excepción compilando $service : $_" -ForegroundColor Red
+            Write-Host "   ERROR: Excepcion compilando $service : $_" -ForegroundColor Red
             $failed += $service
             $exitCode = 1
         } finally {
             Pop-Location
         }
     } else {
-        Write-Host "   ⚠️  Directorio no encontrado: $servicePath" -ForegroundColor Magenta
+        Write-Host "   ADVERTENCIA: Directorio no encontrado: $servicePath" -ForegroundColor Magenta
         $failed += $service
         $exitCode = 1
     }
@@ -56,12 +56,12 @@ foreach ($service in $services) {
 }
 
 Write-Host "=================================================================" -ForegroundColor Cyan
-Write-Host "📊 RESUMEN DE COMPILACIÓN" -ForegroundColor Cyan
+Write-Host "RESUMEN DE COMPILACION" -ForegroundColor Cyan
 Write-Host "=================================================================" -ForegroundColor Cyan
 Write-Host ""
 
 if ($succeeded.Count -gt 0) {
-    Write-Host "✅ Exitosos ($($succeeded.Count)):" -ForegroundColor Green
+    Write-Host "Exitosos ($($succeeded.Count)):" -ForegroundColor Green
     foreach ($s in $succeeded) {
         Write-Host "   - $s" -ForegroundColor Green
     }
@@ -69,7 +69,7 @@ if ($succeeded.Count -gt 0) {
 }
 
 if ($failed.Count -gt 0) {
-    Write-Host "❌ Fallidos ($($failed.Count)):" -ForegroundColor Red
+    Write-Host "Fallidos ($($failed.Count)):" -ForegroundColor Red
     foreach ($f in $failed) {
         Write-Host "   - $f" -ForegroundColor Red
     }
@@ -82,13 +82,13 @@ Write-Host "Fallidos: $($failed.Count)" -ForegroundColor Red
 Write-Host ""
 
 if ($exitCode -eq 0) {
-    Write-Host "🎉 ¡Todos los servicios compilados correctamente!" -ForegroundColor Green
+    Write-Host "Todos los servicios compilados correctamente!" -ForegroundColor Green
     Write-Host ""
-    Write-Host "Próximos pasos:" -ForegroundColor Cyan
-    Write-Host "  1. Ejecutar servicios: cd services\<servicio> && mvn spring-boot:run" -ForegroundColor Gray
+    Write-Host "Proximos pasos:" -ForegroundColor Cyan
+    Write-Host "  1. Ejecutar servicios: cd services\<servicio>; mvn spring-boot:run" -ForegroundColor Gray
     Write-Host "  2. O usar Docker: docker-compose up -d" -ForegroundColor Gray
 } else {
-    Write-Host "⚠️  Algunos servicios fallaron. Revisa los errores arriba." -ForegroundColor Yellow
+    Write-Host "Algunos servicios fallaron. Revisa los errores arriba." -ForegroundColor Yellow
 }
 
 Write-Host ""

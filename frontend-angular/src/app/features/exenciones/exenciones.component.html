@@ -1,0 +1,279 @@
+<div class="container">
+  <mat-card>
+    <mat-card-header>
+      <mat-card-title>
+        <div class="header-title">
+          <span class="material-icons">star</span>
+          <h2>Gestión de Exenciones Tributarias</h2>
+        </div>
+      </mat-card-title>
+    </mat-card-header>
+
+    <mat-card-content>
+      <!-- Filtros -->
+      <div class="filters-section">
+        <mat-form-field appearance="outline">
+          <mat-label>Fuente de Ingreso</mat-label>
+          <mat-select [(ngModel)]="fuenteSeleccionada" (selectionChange)="fuenteSeleccionada.set($event.value)">
+            <mat-option [value]="null">Todas las fuentes</mat-option>
+            @for (fuente of fuentesIngreso(); track fuente.id) {
+              <mat-option [value]="fuente.id">{{ fuente.nombre }}</mat-option>
+            }
+          </mat-select>
+        </mat-form-field>
+
+        <mat-form-field appearance="outline">
+          <mat-label>Vigencia Fiscal</mat-label>
+          <mat-select [(ngModel)]="vigenciaSeleccionada" (selectionChange)="vigenciaSeleccionada.set($event.value)">
+            @for (vigencia of vigenciasDisponibles(); track vigencia) {
+              <mat-option [value]="vigencia">{{ vigencia }}</mat-option>
+            }
+          </mat-select>
+        </mat-form-field>
+
+        <button mat-raised-button color="primary" (click)="openForm()">
+          <span class="material-icons">add</span>
+          Nueva Exención
+        </button>
+
+        <button mat-raised-button color="accent" (click)="copiarAVigencia()" [disabled]="excencionesFiltradas().length === 0">
+          <span class="material-icons">content_copy</span>
+          Copiar a Siguiente Vigencia
+        </button>
+      </div>
+
+      <!-- Información -->
+      <div class="info-chips">
+        <mat-chip-set>
+          <mat-chip>
+            <span class="material-icons">calendar_today</span>
+            Vigencia: {{ vigenciaSeleccionada() }}
+          </mat-chip>
+          <mat-chip>
+            <span class="material-icons">inventory</span>
+            Total: {{ excencionesFiltradas().length }} exenciones
+          </mat-chip>
+        </mat-chip-set>
+      </div>
+
+      <!-- Tabla de Exenciones -->
+      @if (loading()) {
+        <div class="loading-state">
+          <mat-spinner></mat-spinner>
+          <p>Cargando exenciones...</p>
+        </div>
+      } @else if (excencionesFiltradas().length > 0) {
+        <div class="table-container">
+          <table mat-table [dataSource]="excencionesFiltradas()" class="exenciones-table">
+            
+            <!-- Columna Código -->
+            <ng-container matColumnDef="codigo">
+              <th mat-header-cell *matHeaderCellDef>Código</th>
+              <td mat-cell *matCellDef="let exencion">
+                <strong>{{ exencion.codigo }}</strong>
+              </td>
+            </ng-container>
+
+            <!-- Columna Nombre -->
+            <ng-container matColumnDef="nombre">
+              <th mat-header-cell *matHeaderCellDef>Nombre</th>
+              <td mat-cell *matCellDef="let exencion">
+                <div class="nombre-cell">
+                  <span class="nombre-principal">{{ exencion.nombre }}</span>
+                  @if (exencion.condiciones) {
+                    <span class="condiciones">{{ exencion.condiciones }}</span>
+                  }
+                  @if (exencion.requiereAprobacion) {
+                    <span class="aprobacion-badge">
+                      <span class="material-icons">approval</span>
+                      Requiere Aprobación
+                    </span>
+                  }
+                </div>
+              </td>
+            </ng-container>
+
+            <!-- Columna Tipo -->
+            <ng-container matColumnDef="tipo">
+              <th mat-header-cell *matHeaderCellDef>Tipo</th>
+              <td mat-cell *matCellDef="let exencion">
+                <span class="tipo-badge" 
+                      [class.total]="exencion.tipo === 'TOTAL'" 
+                      [class.parcial]="exencion.tipo === 'PARCIAL'"
+                      [class.condicional]="exencion.tipo === 'CONDICIONAL'">
+                  {{ exencion.tipo }}
+                </span>
+              </td>
+            </ng-container>
+
+            <!-- Columna Porcentaje -->
+            <ng-container matColumnDef="porcentaje">
+              <th mat-header-cell *matHeaderCellDef>Porcentaje</th>
+              <td mat-cell *matCellDef="let exencion">
+                <strong class="porcentaje">{{ formatearPorcentaje(exencion) }}</strong>
+              </td>
+            </ng-container>
+
+            <!-- Columna Beneficiario -->
+            <ng-container matColumnDef="beneficiario">
+              <th mat-header-cell *matHeaderCellDef>Beneficiario</th>
+              <td mat-cell *matCellDef="let exencion">
+                {{ exencion.beneficiario || 'General' }}
+              </td>
+            </ng-container>
+
+            <!-- Columna Vigencia -->
+            <ng-container matColumnDef="vigencia">
+              <th mat-header-cell *matHeaderCellDef>Vigencia</th>
+              <td mat-cell *matCellDef="let exencion">
+                <span class="vigencia-badge">{{ exencion.vigencia }}</span>
+              </td>
+            </ng-container>
+
+            <!-- Columna Estado -->
+            <ng-container matColumnDef="estado">
+              <th mat-header-cell *matHeaderCellDef>Estado</th>
+              <td mat-cell *matCellDef="let exencion">
+                <span class="estado-badge" [class.activo]="exencion.activo" [class.inactivo]="!exencion.activo">
+                  {{ exencion.activo ? 'ACTIVO' : 'INACTIVO' }}
+                </span>
+              </td>
+            </ng-container>
+
+            <!-- Columna Acciones -->
+            <ng-container matColumnDef="acciones">
+              <th mat-header-cell *matHeaderCellDef>Acciones</th>
+              <td mat-cell *matCellDef="let exencion">
+                <button mat-icon-button color="primary" (click)="editExencion(exencion)" matTooltip="Editar">
+                  <span class="material-icons">edit</span>
+                </button>
+                <button mat-icon-button color="warn" (click)="deleteExencion(exencion.id!)" matTooltip="Eliminar">
+                  <span class="material-icons">delete</span>
+                </button>
+              </td>
+            </ng-container>
+
+            <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+            <tr mat-row *matRowDef="let row; columns: displayedColumns;" class="table-row"></tr>
+          </table>
+        </div>
+      } @else {
+        <div class="empty-state">
+          <span class="material-icons">inventory_2</span>
+          <h3>No hay exenciones registradas</h3>
+          <p>Para esta fuente y vigencia no se encontraron exenciones configuradas.</p>
+          <button mat-raised-button color="primary" (click)="openForm()">
+            Crear Primera Exención
+          </button>
+        </div>
+      }
+    </mat-card-content>
+  </mat-card>
+
+  <!-- Formulario Modal -->
+  @if (showForm()) {
+    <div class="modal-overlay" (click)="closeForm()">
+      <div class="modal-content" (click)="$event.stopPropagation()">
+        <mat-card>
+          <mat-card-header>
+            <mat-card-title>
+              {{ editMode() ? 'Editar Exención' : 'Nueva Exención' }}
+            </mat-card-title>
+          </mat-card-header>
+
+          <mat-card-content>
+            <form class="exencion-form">
+              <div class="form-row">
+                <mat-form-field appearance="outline">
+                  <mat-label>Fuente de Ingreso</mat-label>
+                  <mat-select [(ngModel)]="currentExencion().fuenteIngresoId" name="fuenteIngreso" required>
+                    @for (fuente of fuentesIngreso(); track fuente.id) {
+                      <mat-option [value]="fuente.id">{{ fuente.nombre }}</mat-option>
+                    }
+                  </mat-select>
+                </mat-form-field>
+
+                <mat-form-field appearance="outline">
+                  <mat-label>Vigencia Fiscal</mat-label>
+                  <mat-select [(ngModel)]="currentExencion().vigencia" name="vigencia" required>
+                    @for (vigencia of vigenciasDisponibles(); track vigencia) {
+                      <mat-option [value]="vigencia">{{ vigencia }}</mat-option>
+                    }
+                  </mat-select>
+                </mat-form-field>
+              </div>
+
+              <div class="form-row">
+                <mat-form-field appearance="outline">
+                  <mat-label>Código</mat-label>
+                  <input matInput [(ngModel)]="currentExencion().codigo" name="codigo" required>
+                </mat-form-field>
+
+                <mat-form-field appearance="outline">
+                  <mat-label>Nombre</mat-label>
+                  <input matInput [(ngModel)]="currentExencion().nombre" name="nombre" required>
+                </mat-form-field>
+              </div>
+
+              <div class="form-row">
+                <mat-form-field appearance="outline">
+                  <mat-label>Tipo</mat-label>
+                  <mat-select [(ngModel)]="currentExencion().tipo" name="tipo" required>
+                    <mat-option value="TOTAL">Total</mat-option>
+                    <mat-option value="PARCIAL">Parcial</mat-option>
+                    <mat-option value="CONDICIONAL">Condicional</mat-option>
+                  </mat-select>
+                </mat-form-field>
+
+                <mat-form-field appearance="outline">
+                  <mat-label>Porcentaje</mat-label>
+                  <input matInput type="number" [(ngModel)]="currentExencion().porcentaje" name="porcentaje" min="0" max="100">
+                  <span matSuffix>%</span>
+                </mat-form-field>
+              </div>
+
+              <mat-form-field appearance="outline" class="full-width">
+                <mat-label>Valor Máximo</mat-label>
+                <input matInput type="number" [(ngModel)]="currentExencion().valorMaximo" name="valorMaximo">
+                <span matPrefix>$</span>
+                <mat-hint>Opcional: Límite máximo de exención en pesos</mat-hint>
+              </mat-form-field>
+
+              <mat-form-field appearance="outline" class="full-width">
+                <mat-label>Beneficiario</mat-label>
+                <input matInput [(ngModel)]="currentExencion().beneficiario" name="beneficiario">
+              </mat-form-field>
+
+              <mat-form-field appearance="outline" class="full-width">
+                <mat-label>Condiciones</mat-label>
+                <textarea matInput [(ngModel)]="currentExencion().condiciones" name="condiciones" rows="3"></textarea>
+              </mat-form-field>
+
+              <mat-form-field appearance="outline" class="full-width">
+                <mat-label>Base Legal</mat-label>
+                <input matInput [(ngModel)]="currentExencion().baseLegal" name="baseLegal">
+              </mat-form-field>
+
+              <div class="form-checkboxes">
+                <mat-checkbox [(ngModel)]="currentExencion().requiereAprobacion" name="requiereAprobacion">
+                  Requiere Aprobación
+                </mat-checkbox>
+
+                <mat-checkbox [(ngModel)]="currentExencion().activo" name="activo">
+                  Activo
+                </mat-checkbox>
+              </div>
+            </form>
+          </mat-card-content>
+
+          <mat-card-actions align="end">
+            <button mat-button (click)="closeForm()">Cancelar</button>
+            <button mat-raised-button color="primary" (click)="saveExencion()">
+              {{ editMode() ? 'Actualizar' : 'Guardar' }}
+            </button>
+          </mat-card-actions>
+        </mat-card>
+      </div>
+    </div>
+  }
+</div>

@@ -1,0 +1,306 @@
+.container {
+  padding: 20px;
+  max-width: 1600px;
+  margin: 0 auto;
+}
+
+mat-card {
+  margin-bottom: 20px;
+}
+
+.header-title {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  
+  .material-icons {
+    font-size: 32px;
+    color: #1976d2;
+  }
+  
+  h2 {
+    margin: 0;
+    font-size: 24px;
+    font-weight: 500;
+  }
+}
+
+.subtitle {
+  margin: 8px 0 0 44px;
+  color: #666;
+  font-size: 14px;
+}
+
+.filters-section {
+  display: flex;
+  gap: 16px;
+  margin-bottom: 24px;
+  
+  mat-form-field {
+    min-width: 250px;
+  }
+}
+
+.tab-content {
+  padding: 20px 0;
+}
+
+.tab-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+  
+  mat-chip-set mat-chip {
+    .material-icons {
+      font-size: 18px;
+      margin-right: 6px;
+      vertical-align: middle;
+    }
+  }
+  
+  button {
+    .material-icons {
+      margin-right: 8px;
+      vertical-align: middle;
+    }
+  }
+}
+
+.table-container {
+  overflow-x: auto;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  
+  .valores-table {
+    width: 100%;
+    
+    th {
+      font-weight: 600;
+      background-color: #f5f5f5;
+      padding: 16px;
+    }
+    
+    td {
+      padding: 16px;
+    }
+    
+    .table-row {
+      transition: background-color 0.2s;
+      
+      &:hover {
+        background-color: #f9f9f9;
+      }
+    }
+  }
+}
+
+.objeto-cell {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  
+  .codigo {
+    font-weight: 600;
+    font-family: monospace;
+  }
+  
+  .tipo {
+    font-size: 12px;
+    color: #666;
+  }
+}
+
+.monto {
+  color: #1976d2;
+  font-size: 15px;
+}
+
+.destinacion-badge {
+  padding: 4px 12px;
+  border-radius: 16px;
+  font-size: 12px;
+  font-weight: 500;
+  text-transform: uppercase;
+  
+  &.residencial {
+    background-color: #e3f2fd;
+    color: #1976d2;
+  }
+  
+  &.comercial {
+    background-color: #fff3e0;
+    color: #e65100;
+  }
+  
+  &.industrial {
+    background-color: #f3e5f5;
+    color: #7b1fa2;
+  }
+  
+  &.rural {
+    background-color: #e8f5e9;
+    color: #2e7d32;
+  }
+}
+
+.estrato-badge {
+  display: inline-block;
+  padding: 4px 10px;
+  background-color: #ede7f6;
+  color: #5e35b1;
+  border-radius: 12px;
+  font-weight: 600;
+  font-size: 13px;
+}
+
+.ciiu-badge {
+  display: inline-block;
+  padding: 4px 10px;
+  background-color: #e0f2f1;
+  color: #00695c;
+  border-radius: 12px;
+  font-weight: 600;
+  font-family: monospace;
+}
+
+.tipo-badge {
+  padding: 4px 12px;
+  border-radius: 16px;
+  font-size: 11px;
+  font-weight: 500;
+  text-transform: capitalize;
+  
+  &.persona_natural {
+    background-color: #e3f2fd;
+    color: #1976d2;
+  }
+  
+  &.persona_juridica {
+    background-color: #f3e5f5;
+    color: #7b1fa2;
+  }
+  
+  &.gran_contribuyente {
+    background-color: #fff3e0;
+    color: #e65100;
+  }
+}
+
+.vigencia-badge {
+  display: inline-block;
+  padding: 4px 12px;
+  background-color: #fff3e0;
+  color: #e65100;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.loading-state {
+  display: flex;
+  justify-content: center;
+  padding: 60px 20px;
+  color: #666;
+}
+
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 80px 20px;
+  text-align: center;
+  
+  .material-icons {
+    font-size: 72px;
+    color: #bdbdbd;
+    margin-bottom: 16px;
+  }
+  
+  h3 {
+    margin: 0 0 8px 0;
+    color: #424242;
+    font-size: 20px;
+  }
+  
+  p {
+    margin: 0 0 24px 0;
+    color: #757575;
+  }
+}
+
+// Modal
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 20px;
+}
+
+.modal-content {
+  max-width: 800px;
+  width: 100%;
+  max-height: 90vh;
+  overflow-y: auto;
+  
+  mat-card {
+    margin: 0;
+  }
+}
+
+.valor-form {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  
+  .form-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    
+    @media (max-width: 600px) {
+      grid-template-columns: 1fr;
+    }
+  }
+  
+  .full-width {
+    width: 100%;
+  }
+  
+  mat-form-field {
+    width: 100%;
+  }
+}
+
+// Responsivo
+@media (max-width: 768px) {
+  .container {
+    padding: 12px;
+  }
+  
+  .filters-section {
+    flex-direction: column;
+    
+    mat-form-field {
+      width: 100%;
+    }
+  }
+  
+  .tab-header {
+    flex-direction: column;
+    gap: 16px;
+    align-items: stretch;
+    
+    button {
+      width: 100%;
+    }
+  }
+}

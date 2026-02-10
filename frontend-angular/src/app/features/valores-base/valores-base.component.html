@@ -1,0 +1,425 @@
+<div class="container">
+  <mat-card>
+    <mat-card-header>
+      <mat-card-title>
+        <div class="header-title">
+          <span class="material-icons">assessment</span>
+          <h2>Valores Base del Objeto Tributario</h2>
+        </div>
+        <p class="subtitle">Datos propios del objeto, versionables por vigencia, con historial</p>
+      </mat-card-title>
+    </mat-card-header>
+
+    <mat-card-content>
+      <!-- Filtros Globales -->
+      <div class="filters-section">
+        <mat-form-field appearance="outline">
+          <mat-label>Vigencia Fiscal</mat-label>
+          <mat-select [(ngModel)]="vigenciaSeleccionada" (selectionChange)="vigenciaSeleccionada.set($event.value)">
+            @for (vigencia of vigenciasDisponibles(); track vigencia) {
+              <mat-option [value]="vigencia">{{ vigencia }}</mat-option>
+            }
+          </mat-select>
+        </mat-form-field>
+
+        <mat-form-field appearance="outline">
+          <mat-label>Buscar Objeto</mat-label>
+          <input matInput [(ngModel)]="objetoSeleccionado" placeholder="ID o Matrícula">
+          <mat-icon matSuffix>search</mat-icon>
+        </mat-form-field>
+      </div>
+
+      <!-- Tabs por tipo de renta -->
+      <mat-tab-group [(selectedIndex)]="tabSeleccionado" (selectedIndexChange)="tabSeleccionado.set($event)">
+        
+        <!-- Tab Predial -->
+        <mat-tab label="Valores Base Predial">
+          <div class="tab-content">
+            <div class="tab-header">
+              <mat-chip-set>
+                <mat-chip>
+                  <span class="material-icons">home</span>
+                  Total: {{ valoresPredial().length }} registros
+                </mat-chip>
+                <mat-chip>
+                  <span class="material-icons">calendar_today</span>
+                  Vigencia: {{ vigenciaSeleccionada() }}
+                </mat-chip>
+              </mat-chip-set>
+              
+              <button mat-raised-button color="primary" (click)="openFormPredial()">
+                <span class="material-icons">add</span>
+                Nuevo Valor Base Predial
+              </button>
+            </div>
+
+            @if (loading()) {
+              <div class="loading-state">
+                <p>Cargando valores base...</p>
+              </div>
+            } @else if (valoresPredial().length > 0) {
+              <div class="table-container">
+                <table mat-table [dataSource]="valoresPredial()" class="valores-table">
+                  
+                  <!-- Columna Objeto -->
+                  <ng-container matColumnDef="objeto">
+                    <th mat-header-cell *matHeaderCellDef>Objeto Tributario</th>
+                    <td mat-cell *matCellDef="let valor">
+                      <div class="objeto-cell">
+                        <span class="codigo">{{ getObjetoIdentificacion(valor.objetoTributarioId) }}</span>
+                        <span class="tipo">{{ valor.usoSuelo }}</span>
+                      </div>
+                    </td>
+                  </ng-container>
+
+                  <!-- Columna Avalúo -->
+                  <ng-container matColumnDef="avaluo">
+                    <th mat-header-cell *matHeaderCellDef>Avalúo Catastral</th>
+                    <td mat-cell *matCellDef="let valor">
+                      <strong class="monto">{{ formatearMoneda(valor.avaluoCatastral) }}</strong>
+                    </td>
+                  </ng-container>
+
+                  <!-- Columna Destinación -->
+                  <ng-container matColumnDef="destinacion">
+                    <th mat-header-cell *matHeaderCellDef>Destinación</th>
+                    <td mat-cell *matCellDef="let valor">
+                      <span class="destinacion-badge" [class]="valor.destinacionEconomica.toLowerCase()">
+                        {{ valor.destinacionEconomica }}
+                      </span>
+                    </td>
+                  </ng-container>
+
+                  <!-- Columna Estrato -->
+                  <ng-container matColumnDef="estrato">
+                    <th mat-header-cell *matHeaderCellDef>Estrato</th>
+                    <td mat-cell *matCellDef="let valor">
+                      <span class="estrato-badge">{{ valor.estrato }}</span>
+                    </td>
+                  </ng-container>
+
+                  <!-- Columna Área Terreno -->
+                  <ng-container matColumnDef="areaTerreno">
+                    <th mat-header-cell *matHeaderCellDef>Área Terreno</th>
+                    <td mat-cell *matCellDef="let valor">{{ formatearArea(valor.areaTerreno) }}</td>
+                  </ng-container>
+
+                  <!-- Columna Área Construida -->
+                  <ng-container matColumnDef="areaConstruida">
+                    <th mat-header-cell *matHeaderCellDef>Área Construida</th>
+                    <td mat-cell *matCellDef="let valor">{{ formatearArea(valor.areaConstruida) }}</td>
+                  </ng-container>
+
+                  <!-- Columna Vigencia -->
+                  <ng-container matColumnDef="vigencia">
+                    <th mat-header-cell *matHeaderCellDef>Vigencia</th>
+                    <td mat-cell *matCellDef="let valor">
+                      <span class="vigencia-badge">{{ valor.vigencia }}</span>
+                    </td>
+                  </ng-container>
+
+                  <!-- Columna Acciones -->
+                  <ng-container matColumnDef="acciones">
+                    <th mat-header-cell *matHeaderCellDef>Acciones</th>
+                    <td mat-cell *matCellDef="let valor">
+                      <button mat-icon-button color="primary" (click)="editValorPredial(valor)" matTooltip="Editar">
+                        <span class="material-icons">edit</span>
+                      </button>
+                      <button mat-icon-button color="warn" (click)="deleteValorPredial(valor.id!)" matTooltip="Eliminar">
+                        <span class="material-icons">delete</span>
+                      </button>
+                    </td>
+                  </ng-container>
+
+                  <tr mat-header-row *matHeaderRowDef="columnasPredial"></tr>
+                  <tr mat-row *matRowDef="let row; columns: columnasPredial;" class="table-row"></tr>
+                </table>
+              </div>
+            } @else {
+              <div class="empty-state">
+                <span class="material-icons">home_work</span>
+                <h3>No hay valores base registrados</h3>
+                <p>Registre los valores base de los objetos tributarios para esta vigencia.</p>
+                <button mat-raised-button color="primary" (click)="openFormPredial()">
+                  Crear Primer Valor Base
+                </button>
+              </div>
+            }
+          </div>
+        </mat-tab>
+
+        <!-- Tab ICA -->
+        <mat-tab label="Valores Base ICA">
+          <div class="tab-content">
+            <div class="tab-header">
+              <mat-chip-set>
+                <mat-chip>
+                  <span class="material-icons">store</span>
+                  Total: {{ valoresICA().length }} registros
+                </mat-chip>
+                <mat-chip>
+                  <span class="material-icons">calendar_today</span>
+                  Vigencia: {{ vigenciaSeleccionada() }}
+                </mat-chip>
+              </mat-chip-set>
+              
+              <button mat-raised-button color="primary" (click)="openFormICA()">
+                <span class="material-icons">add</span>
+                Nuevo Valor Base ICA
+              </button>
+            </div>
+
+            @if (loading()) {
+              <div class="loading-state">
+                <p>Cargando valores base...</p>
+              </div>
+            } @else if (valoresICA().length > 0) {
+              <div class="table-container">
+                <table mat-table [dataSource]="valoresICA()" class="valores-table">
+                  
+                  <!-- Columna Objeto -->
+                  <ng-container matColumnDef="objeto">
+                    <th mat-header-cell *matHeaderCellDef>Objeto Tributario</th>
+                    <td mat-cell *matCellDef="let valor">
+                      <strong>{{ getObjetoIdentificacion(valor.objetoTributarioId) }}</strong>
+                    </td>
+                  </ng-container>
+
+                  <!-- Columna CIIU -->
+                  <ng-container matColumnDef="ciiu">
+                    <th mat-header-cell *matHeaderCellDef>CIIU</th>
+                    <td mat-cell *matCellDef="let valor">
+                      <span class="ciiu-badge">{{ valor.actividadEconomica }}</span>
+                    </td>
+                  </ng-container>
+
+                  <!-- Columna Actividad -->
+                  <ng-container matColumnDef="actividad">
+                    <th mat-header-cell *matHeaderCellDef>Actividad Económica</th>
+                    <td mat-cell *matCellDef="let valor">
+                      {{ valor.descripcionActividad }}
+                    </td>
+                  </ng-container>
+
+                  <!-- Columna Ingresos -->
+                  <ng-container matColumnDef="ingresos">
+                    <th mat-header-cell *matHeaderCellDef>Ingresos Gravados</th>
+                    <td mat-cell *matCellDef="let valor">
+                      <strong class="monto">{{ formatearMoneda(valor.ingresosGravados) }}</strong>
+                    </td>
+                  </ng-container>
+
+                  <!-- Columna Tipo -->
+                  <ng-container matColumnDef="tipo">
+                    <th mat-header-cell *matHeaderCellDef>Tipo Contribuyente</th>
+                    <td mat-cell *matCellDef="let valor">
+                      <span class="tipo-badge" [class]="valor.tipoContribuyente.toLowerCase()">
+                        {{ valor.tipoContribuyente.replace('_', ' ') }}
+                      </span>
+                    </td>
+                  </ng-container>
+
+                  <!-- Columna Vigencia -->
+                  <ng-container matColumnDef="vigencia">
+                    <th mat-header-cell *matHeaderCellDef>Vigencia</th>
+                    <td mat-cell *matCellDef="let valor">
+                      <span class="vigencia-badge">{{ valor.vigencia }}</span>
+                    </td>
+                  </ng-container>
+
+                  <!-- Columna Acciones -->
+                  <ng-container matColumnDef="acciones">
+                    <th mat-header-cell *matHeaderCellDef>Acciones</th>
+                    <td mat-cell *matCellDef="let valor">
+                      <button mat-icon-button color="primary" (click)="editValorICA(valor)" matTooltip="Editar">
+                        <span class="material-icons">edit</span>
+                      </button>
+                      <button mat-icon-button color="warn" (click)="deleteValorICA(valor.id!)" matTooltip="Eliminar">
+                        <span class="material-icons">delete</span>
+                      </button>
+                    </td>
+                  </ng-container>
+
+                  <tr mat-header-row *matHeaderRowDef="columnasICA"></tr>
+                  <tr mat-row *matRowDef="let row; columns: columnasICA;" class="table-row"></tr>
+                </table>
+              </div>
+            } @else {
+              <div class="empty-state">
+                <span class="material-icons">store</span>
+                <h3>No hay valores base registrados</h3>
+                <p>Registre los valores base de las actividades económicas para esta vigencia.</p>
+                <button mat-raised-button color="primary" (click)="openFormICA()">
+                  Crear Primer Valor Base
+                </button>
+              </div>
+            }
+          </div>
+        </mat-tab>
+      </mat-tab-group>
+    </mat-card-content>
+  </mat-card>
+
+  <!-- Form Modal Predial -->
+  @if (showFormPredial()) {
+    <div class="modal-overlay" (click)="closeFormPredial()">
+      <div class="modal-content" (click)="$event.stopPropagation()">
+        <mat-card>
+          <mat-card-header>
+            <mat-card-title>
+              {{ editMode() ? 'Editar Valor Base Predial' : 'Nuevo Valor Base Predial' }}
+            </mat-card-title>
+          </mat-card-header>
+
+          <mat-card-content>
+            <form class="valor-form">
+              <mat-form-field appearance="outline" class="full-width">
+                <mat-label>Objeto Tributario ID</mat-label>
+                <input matInput type="number" [(ngModel)]="currentValorPredial().objetoTributarioId" name="objetoId" required>
+              </mat-form-field>
+
+              <div class="form-row">
+                <mat-form-field appearance="outline">
+                  <mat-label>Vigencia</mat-label>
+                  <mat-select [(ngModel)]="currentValorPredial().vigencia" name="vigencia" required>
+                    @for (vigencia of vigenciasDisponibles(); track vigencia) {
+                      <mat-option [value]="vigencia">{{ vigencia }}</mat-option>
+                    }
+                  </mat-select>
+                </mat-form-field>
+
+                <mat-form-field appearance="outline">
+                  <mat-label>Avalúo Catastral</mat-label>
+                  <input matInput type="number" [(ngModel)]="currentValorPredial().avaluoCatastral" name="avaluo" required>
+                  <span matPrefix>$</span>
+                </mat-form-field>
+              </div>
+
+              <div class="form-row">
+                <mat-form-field appearance="outline">
+                  <mat-label>Destinación Económica</mat-label>
+                  <mat-select [(ngModel)]="currentValorPredial().destinacionEconomica" name="destinacion" required>
+                    <mat-option value="RESIDENCIAL">Residencial</mat-option>
+                    <mat-option value="COMERCIAL">Comercial</mat-option>
+                    <mat-option value="INDUSTRIAL">Industrial</mat-option>
+                    <mat-option value="RURAL">Rural</mat-option>
+                  </mat-select>
+                </mat-form-field>
+
+                <mat-form-field appearance="outline">
+                  <mat-label>Estrato</mat-label>
+                  <mat-select [(ngModel)]="currentValorPredial().estrato" name="estrato" required>
+                    <mat-option [value]="1">Estrato 1</mat-option>
+                    <mat-option [value]="2">Estrato 2</mat-option>
+                    <mat-option [value]="3">Estrato 3</mat-option>
+                    <mat-option [value]="4">Estrato 4</mat-option>
+                    <mat-option [value]="5">Estrato 5</mat-option>
+                    <mat-option [value]="6">Estrato 6</mat-option>
+                  </mat-select>
+                </mat-form-field>
+              </div>
+
+              <div class="form-row">
+                <mat-form-field appearance="outline">
+                  <mat-label>Área Terreno (m²)</mat-label>
+                  <input matInput type="number" [(ngModel)]="currentValorPredial().areaTerreno" name="areaTerreno" required>
+                </mat-form-field>
+
+                <mat-form-field appearance="outline">
+                  <mat-label>Área Construida (m²)</mat-label>
+                  <input matInput type="number" [(ngModel)]="currentValorPredial().areaConstruida" name="areaConstruida" required>
+                </mat-form-field>
+              </div>
+
+              <mat-form-field appearance="outline" class="full-width">
+                <mat-label>Uso del Suelo</mat-label>
+                <input matInput [(ngModel)]="currentValorPredial().usoSuelo" name="usoSuelo" required>
+              </mat-form-field>
+            </form>
+          </mat-card-content>
+
+          <mat-card-actions align="end">
+            <button mat-button (click)="closeFormPredial()">Cancelar</button>
+            <button mat-raised-button color="primary" (click)="saveValorPredial()">
+              {{ editMode() ? 'Actualizar' : 'Guardar' }}
+            </button>
+          </mat-card-actions>
+        </mat-card>
+      </div>
+    </div>
+  }
+
+  <!-- Form Modal ICA -->
+  @if (showFormICA()) {
+    <div class="modal-overlay" (click)="closeFormICA()">
+      <div class="modal-content" (click)="$event.stopPropagation()">
+        <mat-card>
+          <mat-card-header>
+            <mat-card-title>
+              {{ editMode() ? 'Editar Valor Base ICA' : 'Nuevo Valor Base ICA' }}
+            </mat-card-title>
+          </mat-card-header>
+
+          <mat-card-content>
+            <form class="valor-form">
+              <mat-form-field appearance="outline" class="full-width">
+                <mat-label>Objeto Tributario ID</mat-label>
+                <input matInput type="number" [(ngModel)]="currentValorICA().objetoTributarioId" name="objetoId" required>
+              </mat-form-field>
+
+              <mat-form-field appearance="outline" class="full-width">
+                <mat-label>Vigencia</mat-label>
+                <mat-select [(ngModel)]="currentValorICA().vigencia" name="vigencia" required>
+                  @for (vigencia of vigenciasDisponibles(); track vigencia) {
+                    <mat-option [value]="vigencia">{{ vigencia }}</mat-option>
+                  }
+                </mat-select>
+              </mat-form-field>
+
+              <div class="form-row">
+                <mat-form-field appearance="outline">
+                  <mat-label>Código CIIU</mat-label>
+                  <input matInput [(ngModel)]="currentValorICA().actividadEconomica" name="ciiu" required>
+                </mat-form-field>
+
+                <mat-form-field appearance="outline">
+                  <mat-label>Ingresos Gravados</mat-label>
+                  <input matInput type="number" [(ngModel)]="currentValorICA().ingresosGravados" name="ingresos" required>
+                  <span matPrefix>$</span>
+                </mat-form-field>
+              </div>
+
+              <mat-form-field appearance="outline" class="full-width">
+                <mat-label>Descripción Actividad</mat-label>
+                <textarea matInput [(ngModel)]="currentValorICA().descripcionActividad" name="descripcion" rows="2" required></textarea>
+              </mat-form-field>
+
+              <div class="form-row">
+                <mat-form-field appearance="outline">
+                  <mat-label>Tipo Contribuyente</mat-label>
+                  <mat-select [(ngModel)]="currentValorICA().tipoContribuyente" name="tipo" required>
+                    <mat-option value="PERSONA_NATURAL">Persona Natural</mat-option>
+                    <mat-option value="PERSONA_JURIDICA">Persona Jurídica</mat-option>
+                    <mat-option value="GRAN_CONTRIBUYENTE">Gran Contribuyente</mat-option>
+                  </mat-select>
+                </mat-form-field>
+
+                <mat-form-field appearance="outline">
+                  <mat-label>Municipio Operación</mat-label>
+                  <input matInput [(ngModel)]="currentValorICA().municipioOperacion" name="municipio" required>
+                </mat-form-field>
+              </div>
+            </form>
+          </mat-card-content>
+
+          <mat-card-actions align="end">
+            <button mat-button (click)="closeFormICA()">Cancelar</button>
+            <button mat-raised-button color="primary" (click)="saveValorICA()">
+              {{ editMode() ? 'Actualizar' : 'Guardar' }}
+            </button>
+          </mat-card-actions>
+        </mat-card>
+      </div>
+    </div>
+  }
+</div>

@@ -1,0 +1,217 @@
+<div class="container">
+  <mat-card>
+    <mat-card-header>
+      <mat-card-title>
+        <mat-icon>add_task</mat-icon>
+        Nueva Liquidación Masiva
+      </mat-card-title>
+      <mat-card-subtitle>Seleccione los objetos tributarios para liquidar</mat-card-subtitle>
+    </mat-card-header>
+    <mat-card-content>
+      <!-- Sección de configuración -->
+      <div class="config-section">
+        <div class="row">
+          <mat-form-field class="field">
+            <mat-label>Fuente de Ingreso</mat-label>
+            <mat-select [(ngModel)]="fuenteSeleccionada" (selectionChange)="onFuenteChange()" [disabled]="ejecutando()">
+              <mat-option *ngFor="let fuente of fuentes" [value]="fuente">
+                {{ fuente.nombre }}
+              </mat-option>
+            </mat-select>
+          </mat-form-field>
+
+          <mat-form-field class="field">
+            <mat-label>Vigencia</mat-label>
+            <mat-select [(ngModel)]="vigenciaSeleccionada" [disabled]="ejecutando()">
+              <mat-option *ngFor="let vigencia of vigencias" [value]="vigencia">
+                {{ vigencia }}
+              </mat-option>
+            </mat-select>
+          </mat-form-field>
+
+          <button mat-raised-button color="primary" 
+                  (click)="cargarObjetos()" 
+                  [disabled]="!fuenteSeleccionada || ejecutando()">
+            <mat-icon>download</mat-icon>
+            Cargar Objetos
+          </button>
+        </div>
+      </div>
+
+      <!-- Sección de filtros -->
+      <div class="filters-section" *ngIf="objetos().length > 0">
+        <h3>Filtrar Objetos</h3>
+        <div class="row">
+          <mat-form-field class="field">
+            <mat-label>Identificación</mat-label>
+            <input matInput [(ngModel)]="filtroIdentificacion" (ngModelChange)="aplicarFiltros()" [disabled]="ejecutando()">
+            <mat-icon matSuffix>search</mat-icon>
+          </mat-form-field>
+
+          <mat-form-field class="field">
+            <mat-label>Nombre</mat-label>
+            <input matInput [(ngModel)]="filtroNombre" (ngModelChange)="aplicarFiltros()" [disabled]="ejecutando()">
+            <mat-icon matSuffix>search</mat-icon>
+          </mat-form-field>
+
+          <mat-form-field class="field">
+            <mat-label>Estado</mat-label>
+            <mat-select [(ngModel)]="filtroEstado" (selectionChange)="aplicarFiltros()" [disabled]="ejecutando()">
+              <mat-option value="TODOS">Todos</mat-option>
+              <mat-option value="ACTIVO">Activo</mat-option>
+              <mat-option value="INACTIVO">Inactivo</mat-option>
+              <mat-option value="SUSPENDIDO">Suspendido</mat-option>
+            </mat-select>
+          </mat-form-field>
+        </div>
+
+        <div class="selection-info">
+          <mat-chip-set>
+            <mat-chip>
+              <mat-icon>list</mat-icon>
+              Total: {{ objetosFiltrados().length }}
+            </mat-chip>
+            <mat-chip [highlighted]="selection.selected.length > 0" color="primary">
+              <mat-icon>check_circle</mat-icon>
+              Seleccionados: {{ selection.selected.length }}
+            </mat-chip>
+          </mat-chip-set>
+        </div>
+      </div>
+
+      <!-- Tabla de objetos -->
+      <div class="table-section" *ngIf="objetosFiltrados().length > 0">
+        <table mat-table [dataSource]="objetosFiltrados()" class="mat-elevation-z2">
+          <!-- Columna Checkbox -->
+          <ng-container matColumnDef="select">
+            <th mat-header-cell *matHeaderCellDef>
+              <mat-checkbox 
+                (change)="$event ? toggleAll() : null"
+                [checked]="selection.hasValue() && isAllSelected()"
+                [indeterminate]="selection.hasValue() && !isAllSelected()"
+                [disabled]="ejecutando()">
+              </mat-checkbox>
+            </th>
+            <td mat-cell *matCellDef="let row">
+              <mat-checkbox 
+                (click)="$event.stopPropagation()"
+                (change)="$event ? selection.toggle(row) : null"
+                [checked]="selection.isSelected(row)"
+                [disabled]="ejecutando()">
+              </mat-checkbox>
+            </td>
+          </ng-container>
+
+          <!-- Columna Identificación -->
+          <ng-container matColumnDef="identificacion">
+            <th mat-header-cell *matHeaderCellDef>Identificación</th>
+            <td mat-cell *matCellDef="let objeto">{{ objeto.identificacion }}</td>
+          </ng-container>
+
+          <!-- Columna Nombre -->
+          <ng-container matColumnDef="nombre">
+            <th mat-header-cell *matHeaderCellDef>Nombre</th>
+            <td mat-cell *matCellDef="let objeto">{{ objeto.nombre }}</td>
+          </ng-container>
+
+          <!-- Columna Tipo -->
+          <ng-container matColumnDef="tipo">
+            <th mat-header-cell *matHeaderCellDef>Tipo</th>
+            <td mat-cell *matCellDef="let objeto">{{ objeto.tipoObjeto || 'N/A' }}</td>
+          </ng-container>
+
+          <!-- Columna Estado -->
+          <ng-container matColumnDef="estado">
+            <th mat-header-cell *matHeaderCellDef>Estado</th>
+            <td mat-cell *matCellDef="let objeto">
+              <span [class]="'estado-badge estado-' + objeto.estado.toLowerCase()">
+                {{ objeto.estado }}
+              </span>
+            </td>
+          </ng-container>
+
+          <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+          <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+        </table>
+      </div>
+
+      <!-- Botón ejecutar -->
+      <div class="action-section" *ngIf="objetosFiltrados().length > 0">
+        <button mat-raised-button color="accent" 
+                (click)="ejecutarLiquidacion()" 
+                [disabled]="selection.selected.length === 0 || ejecutando()">
+          <mat-icon>play_arrow</mat-icon>
+          Ejecutar Liquidación ({{ selection.selected.length }} objetos)
+        </button>
+      </div>
+
+      <!-- Sección de proceso en tiempo real -->
+      <div class="process-section" *ngIf="ejecutando() || logs().length > 0">
+        <mat-card class="log-card">
+          <mat-card-header>
+            <mat-card-title>
+              <mat-icon>terminal</mat-icon>
+              Proceso de Liquidación
+            </mat-card-title>
+          </mat-card-header>
+          <mat-card-content>
+            <!-- Barra de progreso -->
+            <div class="progress-info" *ngIf="ejecutando()">
+              <mat-progress-bar mode="determinate" [value]="progreso()"></mat-progress-bar>
+              <p>{{ objetosProcesados() }} / {{ totalAProcesar() }} objetos procesados ({{ progresoFormateado() }}%)</p>
+            </div>
+
+            <!-- Estadísticas -->
+            <div class="stats" *ngIf="stats() as statsData">
+              <mat-chip-set>
+                <mat-chip>
+                  <mat-icon>check_circle</mat-icon>
+                  Exitosos: {{ statsData.exitosos }}
+                </mat-chip>
+                <mat-chip color="warn">
+                  <mat-icon>error</mat-icon>
+                  Errores: {{ statsData.errores }}
+                </mat-chip>
+                <mat-chip *ngIf="statsData.montoTotal > 0">
+                  <mat-icon>attach_money</mat-icon>
+                  Total: ${{ formatearMonto(statsData.montoTotal) }}
+                </mat-chip>
+              </mat-chip-set>
+            </div>
+
+            <!-- Log de procesos -->
+            <div class="log-container" #logContainer>
+              <div *ngFor="let log of logs()" [class]="'log-entry log-' + log.tipo">
+                <mat-icon>{{ getIconForLogType(log.tipo) }}</mat-icon>
+                <span class="timestamp">{{ log.timestamp | date:'HH:mm:ss' }}</span>
+                <span class="mensaje">{{ log.mensaje }}</span>
+              </div>
+            </div>
+
+            <!-- Mensaje final -->
+            <div class="final-message" *ngIf="!ejecutando() && logs().length > 0">
+              <mat-icon color="primary">done_all</mat-icon>
+              <p>Proceso completado exitosamente</p>
+              <button mat-button color="primary" (click)="limpiarProceso()">
+                <mat-icon>refresh</mat-icon>
+                Nueva Liquidación
+              </button>
+            </div>
+          </mat-card-content>
+        </mat-card>
+      </div>
+
+      <!-- Mensaje cuando no hay objetos -->
+      <div class="empty-state" *ngIf="!cargando() && objetos().length === 0">
+        <mat-icon>inbox</mat-icon>
+        <p>Seleccione una fuente de ingreso y haga clic en "Cargar Objetos" para comenzar</p>
+      </div>
+
+      <!-- Indicador de carga -->
+      <div class="loading-state" *ngIf="cargando()">
+        <mat-progress-bar mode="indeterminate"></mat-progress-bar>
+        <p>Cargando objetos tributarios...</p>
+      </div>
+    </mat-card-content>
+  </mat-card>
+</div>
